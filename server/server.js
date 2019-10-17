@@ -71,7 +71,11 @@ app.get('/state/:id', function(req, res) {
 });
 
 app.get('/games', function (req, res) {
-	ok(res, Object.keys(games));
+	const response = { games: Object.keys(games).map((g) => 
+	{
+		return {id: g};
+	})};
+	ok(res, response);
 });
 
 app.listen(3000, function () {
