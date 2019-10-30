@@ -3,6 +3,7 @@ using Assets;
 using Newtonsoft.Json;
 using Proyecto26;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
 {
@@ -12,6 +13,10 @@ public class GameMaster : MonoBehaviour
     public Vector2[] spawnPoints;
     int currentPlayers = 0;
 
+    GameObject idField;
+    GameObject registerPanel;
+    GameObject idText;
+
     [Serializable]
     public class Game
     {
@@ -19,15 +24,22 @@ public class GameMaster : MonoBehaviour
         public string id;
         public string secret;
     }
-    
-    public void Start()
+
+    public void Awake()
     {
-        CurrentGame = new Game {id = "mygame"};
-        RegisterGame();
+        idField = GameObject.Find("_IdField");
+        registerPanel = GameObject.Find("_RegisterPanel");
+        idText = GameObject.Find("_IdText");
     }
 
-    void RegisterGame()
+    public void Start()
     {
+        idText.SetActive(false);
+    }
+
+    public void RegisterGame()
+    {
+        CurrentGame = new Game {id = idField.GetComponent<InputField>().text };
         RestClient.Post("http://localhost:3000/games", CurrentGame).Then(response =>
         {
             var r = JsonConvert.DeserializeObject<Response<RegisterGameData>>(response.Text);
@@ -40,6 +52,11 @@ public class GameMaster : MonoBehaviour
             CurrentGame.created = true;
             CurrentGame.secret = r.data.secret;
             Debug.Log(CurrentGame.secret);
+
+            idText.SetActive(true);
+            idText.GetComponent<Text>().text = CurrentGame.id;
+
+            registerPanel.SetActive(false);
         }).Catch(response =>
         {
             Debug.Log(response);

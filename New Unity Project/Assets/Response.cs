@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Assets
 {
@@ -15,5 +16,10 @@ namespace Assets
     public class RegisterGameData : IData
     {
         public string secret;
+    }
+
+    public class GetGamesData : IData
+    {
+        public List<GameMaster.Game> games;
     }
 }
