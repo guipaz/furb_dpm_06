@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class ClientMaster : MonoBehaviour
 {
+    public const string HOST = "http://localhost:3000/";
+
     public GameObject gamesListPanel;
     public GameObject choicesPanel;
     public GameObject nameChooserPanel;
@@ -39,7 +41,7 @@ public class ClientMaster : MonoBehaviour
         foreach (Transform t in gameList.transform)
             Destroy(t.gameObject);
             
-        RestClient.Get("http://dpm-furb.herokuapp.com/games/", (e, response) =>
+        RestClient.Get(HOST + "games/", (e, response) =>
         {
             var r = JsonConvert.DeserializeObject<Response<GetGamesData>>(response.Text);
 

@@ -10,6 +10,32 @@ app.use(bodyParser.urlencoded({
 
 let games = {};
 
+var tickLengthMs = 1000 / 1; // 1fps
+var previousTick = Date.now()
+function gameLoop() {
+	var now = Date.now();
+	if (previousTick + tickLengthMs <= now) {
+		var delta = (now - previousTick) / 1000
+		previousTick = now
+
+		update(delta)
+	}
+
+	setTimeout(gameLoop)
+}
+setTimeout(gameLoop)
+
+function update() {
+	Object.keys(games).forEach((key) => {
+		const game = games[key];
+		updateGame(game);
+	});
+}
+
+function updateGame(game) {
+	
+}
+
 function isExistingGame(id) {
 	return Object.keys(games).filter(g => g == id).length > 0;
 }

@@ -40,7 +40,7 @@ public class GameMaster : MonoBehaviour
     public void RegisterGame()
     {
         CurrentGame = new Game {id = idField.GetComponent<InputField>().text };
-        RestClient.Post("http://dpm-furb.herokuapp.com/games", CurrentGame).Then(response =>
+        RestClient.Post( ClientMaster.HOST + "games", CurrentGame).Then(response =>
         {
             var r = JsonConvert.DeserializeObject<Response<RegisterGameData>>(response.Text);
             if (r.status != 200)
