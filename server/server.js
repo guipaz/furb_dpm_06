@@ -35,16 +35,8 @@ function update() {
 function updateGame(game) {
 	const players = game.players;
 	const now = Date.now();
-	Object.keys(players).forEach((key) => {
-		const player = players[key];
-		const keepAlive = player.keepAlive;
-		if (keepAlive + 10000 <= now) {
-			console.log("Jogador desconectado: " + key);
-			delete game.players.key;
-		}
-	});
 
-	if (game.question && game.question.finishTime >= Date.now()) {
+	if (game.currentQuestion && Date.now() >= game.currentQuestion.finishTime) {
 		game.finished = true;
 	}
 }
