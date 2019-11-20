@@ -11,8 +11,14 @@ public class ClientMaster : MonoBehaviour
     public GameObject gamesListPanel;
     public GameObject choicesPanel;
     public GameObject nameChooserPanel;
+    public GameObject waitingLabel;
 
     public GameObject cellPrefab;
+
+    float updateCooldown;
+    bool waiting;
+    string gameId;
+    bool updatedQuestions;
 
     GameObject gameList;
 
@@ -27,6 +33,7 @@ public class ClientMaster : MonoBehaviour
         gamesListPanel.SetActive(true);
         choicesPanel.SetActive(false);
         nameChooserPanel.SetActive(false);
+        waitingLabel.SetActive(false);
 
         gameList = GameObject.Find("_GameList");
     }
@@ -66,8 +73,55 @@ public class ClientMaster : MonoBehaviour
         {
             RestClient.Post("http://dpm-furb.herokuapp.com/games/", new ClientJoin { id = id, teamName = nameChooserPanel.GetComponentInChildren<InputField>().text }).Then((response) =>
             {
-                Debug.Log("deu boa");
+                nameChooserPanel.SetActive(false);
+                waitingLabel.SetActive(true);
+                waiting = true;
+                gameId = id;
             });
         });
+    }
+
+    void Update()
+    {
+        if (waiting)
+        {
+            updateCooldown -= Time.deltaTime;
+            if (updateCooldown <= 0)
+            {
+                updateCooldown = 1;
+                
+                RestClient.Get(HOST + "state/" + gameId, (e, response) =>
+                {
+                    var r = JsonConvert.DeserializeObject<Response<GameState>>(response.Text);
+                    if (r.data.started)
+                    {
+                        waitingLabel.SetActive(false);
+
+                        if (r.data.finished)
+                        {
+                            choicesPanel.SetActive(false);
+                            //TODO mostra outra coisa
+                        }
+                        else if (!updatedQuestions)
+                        {
+                            var question = r.data.currentQuestion;
+                            choicesPanel.SetActive(true);
+
+                            var answer1 = GameObject.Find("_Answer1");
+                            var answer2 = GameObject.Find("_Answer2");
+                            var answer3 = GameObject.Find("_Answer3");
+                            var answer4 = GameObject.Find("_Answer4");
+
+                            answer1.GetComponent<Text>().text = question.options[0].ToString();
+                            answer2.GetComponent<Text>().text = question.options[1].ToString();
+                            answer3.GetComponent<Text>().text = question.options[2].ToString();
+                            answer4.GetComponent<Text>().text = question.options[3].ToString();
+
+                            updatedQuestions = true;
+                        }
+                    }
+                });
+            }
+        }
     }
 }

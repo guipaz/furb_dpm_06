@@ -22,4 +22,11 @@ namespace Assets
     {
         public List<GameMaster.Game> games;
     }
+
+    public class GameState : IData
+    {
+        public bool started;
+        public bool finished;
+        public GameFlowLogic.Question currentQuestion;
+    }
 }

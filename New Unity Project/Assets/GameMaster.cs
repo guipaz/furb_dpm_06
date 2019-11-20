@@ -16,6 +16,8 @@ public class GameMaster : MonoBehaviour
     GameObject idField;
     GameObject registerPanel;
     GameObject idText;
+    GameObject tableInfoPanel;
+    GameObject gamePanel;
 
     [Serializable]
     public class Game
@@ -30,10 +32,14 @@ public class GameMaster : MonoBehaviour
         idField = GameObject.Find("_IdField");
         registerPanel = GameObject.Find("_RegisterPanel");
         idText = GameObject.Find("_IdText");
+        tableInfoPanel = GameObject.Find("_TableInfoPanel");
+        gamePanel = GameObject.Find("_GamePanel");
     }
-
+    
     public void Start()
     {
+        gamePanel.SetActive(false);
+        tableInfoPanel.SetActive(true);
         idText.SetActive(false);
     }
 
@@ -61,6 +67,13 @@ public class GameMaster : MonoBehaviour
         {
             Debug.Log(response);
         });
+    }
+
+    public void StartGame()
+    {
+        tableInfoPanel.SetActive(false);
+        gamePanel.SetActive(true);
+        GetComponent<GameFlowLogic>().Play(CurrentGame);
     }
 
     public void AddPlayer()
