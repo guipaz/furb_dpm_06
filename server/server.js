@@ -48,7 +48,7 @@ app.post('/games', function (req, res) {
 	}
 
 	const secret = generateGuid();
-	const game = { id: id, players: [], secret: secret, finished: false };
+	const game = { id: id, players: [], secret: secret, finished: false, keepAlive: Date.now() };
 	games[id] = game;
 
 	ok(res, { secret: secret });
@@ -63,14 +63,7 @@ app.post('/games/:id/keepAlive', function (req, res) {
 		return;
 	}
 
-	const now = Date.now();
-	const game = games[id];
-	const player = game.players[guid];
-	if (!player) {
-		error(res, "Jogador inexistente");
-	}
-
-	player.keepAlive = Date.now();
+	game.keepAlive = Date.now();
 	ok(res);
 });
 
@@ -140,7 +133,6 @@ app.post('/sendQuestion/:id', function(req, res) {
 		operatorB: req.body.operatorB,
 		operation: req.body.operation,
 		options: req.body.options,
-		finishTime: Date.now() + 10000,
 		timeUp: false
 	};
 
@@ -162,6 +154,19 @@ app.post('/sendAnswer/:id', function(req, res) {
 });
 
 app.get('/games', function (req, res) {
+	let toRemoveGames = [];
+	const now = Date.now();
+	Object.keys(games).map((g) => 
+	{
+		if (g.keepAlive + 10000 > now) {
+			toRemoveGames.push(g);
+		}
+	});
+
+	Object.keys(toRemoveGames).map((g) => {
+		delete games[g.id];
+	});
+
 	const response = { games: Object.keys(games).map((g) => 
 	{
 		return {id: g};

@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class ClientMaster : MonoBehaviour
 {
-    public const string HOST = "http://localhost:3000/";
+    //public const string HOST = "http://localhost:3000/";
+    public const string HOST = "http://dpm-furb.herokuapp.com/";
 
     public GameObject gamesListPanel;
     public GameObject choicesPanel;
