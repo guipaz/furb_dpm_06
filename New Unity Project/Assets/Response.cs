@@ -29,4 +29,14 @@ namespace Assets
         public bool finished;
         public GameFlowLogic.Question currentQuestion;
     }
+
+    public class AnswersData : IData
+    {
+        public List<ClientMaster.AnAnswer> answers;
+    }
+
+    public class PlayersData : IData
+    {
+        public List<ClientMaster.ClientJoin> players;
+    }
 }

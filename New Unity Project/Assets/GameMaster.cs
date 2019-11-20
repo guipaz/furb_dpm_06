@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Assets;
 using Newtonsoft.Json;
 using Proyecto26;
@@ -18,6 +19,11 @@ public class GameMaster : MonoBehaviour
     GameObject idText;
     GameObject tableInfoPanel;
     GameObject gamePanel;
+
+    List<string> players = new List<string>();
+    int nextPlayerId;
+
+    float updateCooldown;
 
     [Serializable]
     public class Game
@@ -46,7 +52,7 @@ public class GameMaster : MonoBehaviour
     public void RegisterGame()
     {
         CurrentGame = new Game {id = idField.GetComponent<InputField>().text };
-        RestClient.Post( ClientMaster.HOST + "games", CurrentGame).Then(response =>
+        RestClient.Post(ClientMaster.HOST + "games", CurrentGame).Then(response =>
         {
             var r = JsonConvert.DeserializeObject<Response<RegisterGameData>>(response.Text);
             if (r.status != 200)
@@ -63,8 +69,11 @@ public class GameMaster : MonoBehaviour
             idText.GetComponent<Text>().text = CurrentGame.id;
 
             registerPanel.SetActive(false);
+
+            updateCooldown = 1;
         }).Catch(response =>
         {
+            GameObject.Find("_Log").GetComponent<Text>().text = response.ToString();
             Debug.Log(response);
         });
     }
@@ -85,5 +94,46 @@ public class GameMaster : MonoBehaviour
 
         var spawnPoint = spawnPoints[currentPlayers++];
         Instantiate(pawnPrefab, spawnPoint, Quaternion.identity);
+    }
+
+    void Update()
+    {
+        if (updateCooldown > 0)
+        {
+            updateCooldown -= Time.deltaTime;
+            if (updateCooldown <= 0)
+            {
+                updateCooldown = 1;
+
+                RestClient.Get(ClientMaster.HOST + "players/" + CurrentGame.id).Then(response =>
+                {
+                    var r = JsonConvert.DeserializeObject<Response<PlayersData>>(response.Text);
+                    if (r.status != 200)
+                    {
+                        Debug.Log(r.error);
+                        return;
+                    }
+
+                    foreach (var p in r.data.players)
+                    {
+                        if (!players.Contains(p.teamName))
+                        {
+                            players.Add(p.teamName);
+                            var id = ++nextPlayerId;
+                            if (id >= 4)
+                            {
+                                return;
+                            }
+
+                            var obj = GameObject.Find("_Player" + id + "Name");
+                            obj.GetComponent<Text>().text = p.teamName;
+
+                            obj = GameObject.Find("_Player" + id);
+                            obj.name = "_Player_" + p.teamName;
+                        }
+                    }
+                });
+            }
+        }
     }
 }

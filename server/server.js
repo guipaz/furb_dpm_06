@@ -10,37 +10,6 @@ app.use(bodyParser.urlencoded({
 
 let games = {};
 
-var tickLengthMs = 1000 / 1; // 1fps
-var previousTick = Date.now()
-function gameLoop() {
-	var now = Date.now();
-	if (previousTick + tickLengthMs <= now) {
-		var delta = (now - previousTick) / 1000
-		previousTick = now
-
-		update(delta)
-	}
-
-	setTimeout(gameLoop)
-}
-setTimeout(gameLoop)
-
-function update() {
-	Object.keys(games).forEach((key) => {
-		const game = games[key];
-		updateGame(game);
-	});
-}
-
-function updateGame(game) {
-	const players = game.players;
-	const now = Date.now();
-
-	if (game.currentQuestion && Date.now() >= game.currentQuestion.finishTime) {
-		game.finished = true;
-	}
-}
-
 function isExistingGame(id) {
 	return Object.keys(games).filter(g => g == id).length > 0;
 }
@@ -53,6 +22,22 @@ function error(res, error) {
 	res.send({status: 500, error: error});
 }
 
+app.post('/finishGame/:id', function (req, res) {
+	const id = req.params.id;
+	const game = games[id];
+	game.finished = true;
+
+	ok(res);
+});
+
+app.post('/finishQuestion/:id', function (req, res) {
+	const id = req.params.id;
+	const game = games[id];
+	game.currentQuestion.timeUp = true;
+
+	ok(res);
+});
+
 app.post('/games', function (req, res) {
 	console.log(req.body);
 	
@@ -63,8 +48,8 @@ app.post('/games', function (req, res) {
 	}
 
 	const secret = generateGuid();
-	const game = { id: id, players: {}, secret: secret };
-	games[req.body.id] = game;
+	const game = { id: id, players: [], secret: secret, finished: false };
+	games[id] = game;
 
 	ok(res, { secret: secret });
 });
@@ -107,7 +92,9 @@ app.post('/enterGame', function(req, res) {
 	console.log(player);
 
 	const game = games[id];
-	game.players[teamName] = player;
+	game.players.push(player);
+
+	console.log(game.players);
 
 	ok(res);
 })
@@ -115,13 +102,35 @@ app.post('/enterGame', function(req, res) {
 app.get('/state/:id', function(req, res) {
 	const id = req.params.id;
 	if (!isExistingGame(id)) {
-		error("Jogo não existente");
+		error(res, "Jogo não existente");
 		return;
 	}
 
 	const game = games[id];
 
-	ok(res, { started: game.currentQuestion != undefined, currentQuestion: game.currentQuestion, finished: game.finished });
+	ok(res, { started: game.currentQuestion != undefined, currentQuestion: game.currentQuestion });
+});
+
+app.get('/answers/:id', function(req, res) {
+	const id = req.params.id;
+	if (!isExistingGame(id)) {
+		error(res, "Jogo não existente");
+		return;
+	}
+
+	ok(res, { answers: games[id].answers });
+});
+
+app.get('/players/:id', function(req, res) {
+	const id = req.params.id;
+	if (!isExistingGame(id)) {
+		error(res, "Jogo não existente");
+		return;
+	}
+
+	const players = games[id].players;
+
+	ok(res, { players: players });
 });
 
 app.post('/sendQuestion/:id', function(req, res) {
@@ -132,12 +141,23 @@ app.post('/sendQuestion/:id', function(req, res) {
 		operation: req.body.operation,
 		options: req.body.options,
 		finishTime: Date.now() + 10000,
-		finished: false
+		timeUp: false
 	};
 
 	console.log(question);
 
-	games[id].currentQuestion = question;
+	let game = games[id];
+	game.currentQuestion = question;
+	game.answers = [];
+	ok(res);
+});
+
+app.post('/sendAnswer/:id', function(req, res) {
+	const id = req.params.id;
+
+	let game = games[id];
+	game.answers.push({player: req.body.player, answer: req.body.answer});
+
 	ok(res);
 });
 

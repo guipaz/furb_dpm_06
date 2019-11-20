@@ -16,13 +16,14 @@ public class ClientMaster : MonoBehaviour
     public GameObject cellPrefab;
 
     float updateCooldown;
-    bool waiting;
+    bool playing;
     string gameId;
+    string teamName;
     bool updatedQuestions;
 
     GameObject gameList;
 
-    public class ClientJoin
+    public class ClientJoin : IData
     {
         public string id;
         public string teamName;
@@ -71,19 +72,21 @@ public class ClientMaster : MonoBehaviour
 
         nameChooserPanel.GetComponentInChildren<Button>().onClick.AddListener(() =>
         {
-            RestClient.Post("http://dpm-furb.herokuapp.com/games/", new ClientJoin { id = id, teamName = nameChooserPanel.GetComponentInChildren<InputField>().text }).Then((response) =>
+            var teamName = nameChooserPanel.GetComponentInChildren<InputField>().text;
+            RestClient.Post(HOST + "enterGame/", new ClientJoin { id = id, teamName = teamName }).Then((response) =>
             {
                 nameChooserPanel.SetActive(false);
                 waitingLabel.SetActive(true);
-                waiting = true;
+                playing = true;
                 gameId = id;
+                this.teamName = teamName;
             });
         });
     }
 
     void Update()
     {
-        if (waiting)
+        if (playing)
         {
             updateCooldown -= Time.deltaTime;
             if (updateCooldown <= 0)
@@ -97,14 +100,19 @@ public class ClientMaster : MonoBehaviour
                     {
                         waitingLabel.SetActive(false);
 
-                        if (r.data.finished)
+                        var game = r.data;
+                        var question = game.currentQuestion;
+
+                        //TODO on finish game
+
+                        if (question.timeUp)
                         {
                             choicesPanel.SetActive(false);
+                            updatedQuestions = false;
                             //TODO mostra outra coisa
                         }
                         else if (!updatedQuestions)
                         {
-                            var question = r.data.currentQuestion;
                             choicesPanel.SetActive(true);
 
                             var answer1 = GameObject.Find("_Answer1");
@@ -117,11 +125,58 @@ public class ClientMaster : MonoBehaviour
                             answer3.GetComponent<Text>().text = question.options[2].ToString();
                             answer4.GetComponent<Text>().text = question.options[3].ToString();
 
+                            var answerButton1 = GameObject.Find("_AnswerButton1");
+                            var answerButton2 = GameObject.Find("_AnswerButton2");
+                            var answerButton3 = GameObject.Find("_AnswerButton3");
+                            var answerButton4 = GameObject.Find("_AnswerButton4");
+
+                            answerButton1.GetComponent<Image>().color = Color.white;
+                            answerButton2.GetComponent<Image>().color = Color.white;
+                            answerButton3.GetComponent<Image>().color = Color.white;
+                            answerButton4.GetComponent<Image>().color = Color.white;
+
                             updatedQuestions = true;
                         }
                     }
                 });
             }
         }
+    }
+
+    public class AnAnswer
+    {
+        public string player;
+        public string answer;
+    }
+
+    public void Answer(string id)
+    {
+        GameObject obj = null;
+        switch (id)
+        {
+            case "1":
+                obj = GameObject.Find("_AnswerButton1");
+                break;
+            case "2":
+                obj = GameObject.Find("_AnswerButton2");
+                break;
+            case "3":
+                obj = GameObject.Find("_AnswerButton3");
+                break;
+            case "4":
+                obj = GameObject.Find("_AnswerButton4");
+                break;
+        }
+
+        obj.GetComponent<Image>().color = Color.green;
+
+        RestClient.Post(ClientMaster.HOST + "sendAnswer/" + gameId, new AnAnswer { player = teamName, answer = id }).Then(response =>
+        {
+            
+        }).Catch(response =>
+        {
+            GameObject.Find("_Log").GetComponent<Text>().text = response.ToString();
+            Debug.Log(response);
+        });
     }
 }
