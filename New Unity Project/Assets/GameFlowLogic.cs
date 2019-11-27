@@ -12,7 +12,7 @@ public class GameFlowLogic : MonoBehaviour
     {
         public enum Operation
         {
-            Sum = 1, Subtraction = 2
+            Sum = 1, Subtraction = 2, Multiplication = 3
         }
 
         public int operatorA;
@@ -46,9 +46,15 @@ public class GameFlowLogic : MonoBehaviour
         {
             var options = new List<int>();
             var realAnswer = GetAnswer();
+            if (realAnswer <= 1) 
+            {
+                options.Add(realAnswer + 3);
+            } else 
+            {
+                options.Add(realAnswer - 1);
+            }
             options.Add(realAnswer);
-            options.Add(realAnswer + 1);
-            options.Add(realAnswer - 1);
+            options.Add(realAnswer + 1);            
             options.Add(realAnswer + 2);
             return options;
         }
@@ -64,6 +70,10 @@ public class GameFlowLogic : MonoBehaviour
 
         NextQuestion();
     }
+    public enum Difficulty
+    {
+        Easy = 1, Medium = 2, Hard=  3
+    }
     
     bool playing = false;
     float updateCooldown;
@@ -73,6 +83,7 @@ public class GameFlowLogic : MonoBehaviour
     GameObject answerLabel;
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
+    Difficulty difficulty;//precisa pegar da tela pra popular aqui
 
     void NextQuestion()
     {
@@ -80,7 +91,26 @@ public class GameFlowLogic : MonoBehaviour
         questionLabel.SetActive(true);
 
         var random = new Random();
-        currentQuestion = new Question(random.Next(1, 10), random.Next(1, 10), random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction);
+        switch (difficulty)
+        {
+            case Difficulty.Easy:
+                currentQuestion = new Question(random.Next(1, 20), random.Next(1, 20), random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction);
+                if (currentQuestion.operation == Question.Operation.Subtraction)
+                {
+                    while (currentQuestion.operatorA < currentQuestion.operatorB)
+                    {
+                        currentQuestion.operatorA = random.Next(1, 20);
+                    }                    
+                }
+                break
+            case Difficulty.Medium:
+
+                break
+            case Difficulty.Hard:
+                
+                break            
+        }
+        
 
         ShowQuestion(currentQuestion);
 
