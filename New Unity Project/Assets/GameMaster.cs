@@ -19,6 +19,7 @@ public class GameMaster : MonoBehaviour
     GameObject idText;
     GameObject tableInfoPanel;
     GameObject gamePanel;
+    GameObject difficultyField;
 
     List<string> players = new List<string>();
     int nextPlayerId;
@@ -41,12 +42,13 @@ public class GameMaster : MonoBehaviour
         idText = GameObject.Find("_IdText");
         tableInfoPanel = GameObject.Find("_TableInfoPanel");
         gamePanel = GameObject.Find("_GamePanel");
+        difficultyField = GameObject.Find("_DifficultyField");
     }
     
     public void Start()
     {
         gamePanel.SetActive(false);
-        tableInfoPanel.SetActive(true);
+        tableInfoPanel.SetActive(false);
         idText.SetActive(false);
     }
 
@@ -70,6 +72,7 @@ public class GameMaster : MonoBehaviour
             idText.GetComponent<Text>().text = CurrentGame.id;
 
             registerPanel.SetActive(false);
+            tableInfoPanel.SetActive(true);
 
             updateCooldown = 1;
             keepAliveCooldown = 1;
@@ -84,7 +87,9 @@ public class GameMaster : MonoBehaviour
     {
         tableInfoPanel.SetActive(false);
         gamePanel.SetActive(true);
-        GetComponent<GameFlowLogic>().Play(CurrentGame);
+
+        var difficulty = difficultyField.GetComponent<Dropdown>().value;
+        GetComponent<GameFlowLogic>().Play(CurrentGame, (GameFlowLogic.Difficulty) difficulty);
     }
 
     public void AddPlayer()

@@ -37,6 +37,8 @@ public class GameFlowLogic : MonoBehaviour
                     return operatorA + operatorB;
                 case Operation.Subtraction:
                     return operatorA - operatorB;
+                case Operation.Multiplication:
+                    return operatorA * operatorB;
             }
 
             return 0;
@@ -61,9 +63,10 @@ public class GameFlowLogic : MonoBehaviour
     }
     
     public GameMaster.Game game;
-    public void Play(GameMaster.Game game)
+    public void Play(GameMaster.Game game, Difficulty difficulty)
     {
         this.game = game;
+        this.difficulty = difficulty;
 
         questionLabel = GameObject.Find("_QuestionLabel");
         answerLabel = GameObject.Find("_AnswerLabel");
@@ -72,7 +75,7 @@ public class GameFlowLogic : MonoBehaviour
     }
     public enum Difficulty
     {
-        Easy = 1, Medium = 2, Hard=  3
+        Easy = 0, Medium = 1, Hard = 2
     }
     
     bool playing = false;
@@ -83,6 +86,7 @@ public class GameFlowLogic : MonoBehaviour
     GameObject answerLabel;
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
+
     Difficulty difficulty;//precisa pegar da tela pra popular aqui
 
     void NextQuestion()
@@ -102,16 +106,15 @@ public class GameFlowLogic : MonoBehaviour
                         currentQuestion.operatorA = random.Next(1, 20);
                     }                    
                 }
-                break
+                break;
             case Difficulty.Medium:
-
-                break
+                currentQuestion = new Question(235, 193, Question.Operation.Subtraction); 
+                break;
             case Difficulty.Hard:
-                
-                break            
+                currentQuestion = new Question(235, 193, Question.Operation.Multiplication);
+                break;           
         }
         
-
         ShowQuestion(currentQuestion);
 
         foreach (var obj in resetPlayers)
@@ -180,7 +183,7 @@ public class GameFlowLogic : MonoBehaviour
 
     void ShowQuestion(Question question)
     {
-        questionLabel.GetComponent<Text>().text = question.operatorA + " " + (question.operation == Question.Operation.Sum ? "+" : "-") + " " + question.operatorB + " = ?";
+        questionLabel.GetComponent<Text>().text = question.operatorA + " " + (question.operation == Question.Operation.Sum ? "+" : (question.operation == Question.Operation.Multiplication ? "*" : "-")) + " " + question.operatorB + " = ?";
     }
 }
 
