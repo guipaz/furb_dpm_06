@@ -54,7 +54,7 @@ app.post('/games', function (req, res) {
 	ok(res, { secret: secret });
 });
 
-app.post('/games/:id/keepAlive', function (req, res) {
+app.post('/games/keepAlive/:id', function (req, res) {
 	const id = req.params.id;
 	const guid = req.body.guid;
 
@@ -156,15 +156,18 @@ app.post('/sendAnswer/:id', function(req, res) {
 app.get('/games', function (req, res) {
 	let toRemoveGames = [];
 	const now = Date.now();
-	Object.keys(games).map((g) => 
+
+	const gameKeys = Object.keys(games);
+	gameKeys.map((g) => 
 	{
-		if (g.keepAlive + 10000 > now) {
+		console.log(games[g]);
+		if (games[g].keepAlive + 5000 < now) {
 			toRemoveGames.push(g);
 		}
 	});
 
-	Object.keys(toRemoveGames).map((g) => {
-		delete games[g.id];
+	toRemoveGames.map((g) => {
+		delete games[g];
 	});
 
 	const response = { games: Object.keys(games).map((g) => 

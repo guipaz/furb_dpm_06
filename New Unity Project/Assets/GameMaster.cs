@@ -24,6 +24,7 @@ public class GameMaster : MonoBehaviour
     int nextPlayerId;
 
     float updateCooldown;
+    float keepAliveCooldown;
 
     [Serializable]
     public class Game
@@ -71,6 +72,7 @@ public class GameMaster : MonoBehaviour
             registerPanel.SetActive(false);
 
             updateCooldown = 1;
+            keepAliveCooldown = 1;
         }).Catch(response =>
         {
             GameObject.Find("_Log").GetComponent<Text>().text = response.ToString();
@@ -98,6 +100,16 @@ public class GameMaster : MonoBehaviour
 
     void Update()
     {
+        if (keepAliveCooldown > 0)
+        {
+            keepAliveCooldown -= Time.deltaTime;
+            if (keepAliveCooldown <= 0)
+            {
+                keepAliveCooldown = 1;
+                KeepAlive();
+            }
+        }
+
         if (updateCooldown > 0)
         {
             updateCooldown -= Time.deltaTime;
@@ -135,5 +147,10 @@ public class GameMaster : MonoBehaviour
                 });
             }
         }
+    }
+
+    void KeepAlive()
+    {
+        RestClient.Post(ClientMaster.HOST + "keepAlive/" + CurrentGame.id, null);
     }
 }

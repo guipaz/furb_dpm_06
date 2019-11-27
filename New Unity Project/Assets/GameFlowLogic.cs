@@ -121,7 +121,7 @@ public class GameFlowLogic : MonoBehaviour
             }
         }
     }
-
+    
     public void FinishQuestion()
     {
         timeUpCooldown = 0;
@@ -153,3 +153,4 @@ public class GameFlowLogic : MonoBehaviour
         questionLabel.GetComponent<Text>().text = question.operatorA + " " + (question.operation == Question.Operation.Sum ? "+" : "-") + " " + question.operatorB + " = ?";
     }
 }
+
