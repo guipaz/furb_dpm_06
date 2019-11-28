@@ -63,13 +63,21 @@ public class GameFlowLogic : MonoBehaviour
     }
     
     public GameMaster.Game game;
-    public void Play(GameMaster.Game game, Difficulty difficulty)
+    public void Play(GameMaster.Game game, Difficulty difficulty, List<string> players)
     {
         this.game = game;
         this.difficulty = difficulty;
 
+        foreach (var p in players)
+        {
+            points[p] = 0;
+        }
+
         questionLabel = GameObject.Find("_QuestionLabel");
         answerLabel = GameObject.Find("_AnswerLabel");
+        questionNumber = GameObject.Find("_QuestionNumber");
+        winnerLabel = GameObject.Find("_WinnerLabel");
+        winnerLabel.SetActive(false);
 
         NextQuestion();
     }
@@ -78,14 +86,18 @@ public class GameFlowLogic : MonoBehaviour
         Easy = 0, Medium = 1, Hard = 2
     }
     
-    bool playing = false;
+    bool playing;
+    int currentQuestionNumber = 1;
     float updateCooldown;
     float nextRoundCooldown;
     float timeUpCooldown;
     GameObject questionLabel;
     GameObject answerLabel;
+    GameObject questionNumber;
+    GameObject winnerLabel;
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
+    Dictionary<string, int> points = new Dictionary<string, int>();
 
     Difficulty difficulty;//precisa pegar da tela pra popular aqui
 
@@ -119,7 +131,7 @@ public class GameFlowLogic : MonoBehaviour
 
         foreach (var obj in resetPlayers)
         {
-            obj.GetComponent<SpriteRenderer>().color = Color.white;
+            obj.GetComponentInChildren<SpriteRenderer>().color = new Color(99/255f, 147/255f, 192/255f);
         }
 
         RestClient.Post(ClientMaster.HOST + "sendQuestion/" + game.id, currentQuestion).Then((response) =>
@@ -134,12 +146,26 @@ public class GameFlowLogic : MonoBehaviour
 
     void Update()
     {
+        if (!playing)
+        {
+            return;
+        }
+
         if (nextRoundCooldown > 0)
         {
             nextRoundCooldown -= Time.deltaTime;
             if (nextRoundCooldown <= 0)
             {
-                NextQuestion();
+                currentQuestionNumber++;
+                if (currentQuestionNumber > 3)
+                {
+                    //TODO game finished
+                    FinishGame();
+                }
+                else
+                {
+                    NextQuestion();
+                }
             }
 
             return;
@@ -153,6 +179,26 @@ public class GameFlowLogic : MonoBehaviour
                 FinishQuestion();
             }
         }
+    }
+
+    public void FinishGame()
+    {
+        string winnerName = "";
+        int winnerPoints = 0;
+        foreach (var player in points.Keys)
+        {
+            if (points[player] > winnerPoints)
+            {
+                winnerPoints = points[player];
+                winnerName = player;
+            }
+        }
+
+        playing = false;
+        winnerLabel.SetActive(true);
+        answerLabel.SetActive(false);
+        questionLabel.SetActive(false);
+        winnerLabel.GetComponent<Text>().text = "A equipe ganhadora é a '" + winnerName + "' com " + winnerPoints + " pontos!";
     }
     
     public void FinishQuestion()
@@ -171,7 +217,11 @@ public class GameFlowLogic : MonoBehaviour
             foreach (var a in answers)
             {
                 var obj = GameObject.Find("_Player_" + a.player);
-                obj.GetComponent<SpriteRenderer>().color = currentQuestion.GetAnswer() == currentQuestion.options[int.Parse(a.answer) - 1] ? Color.green : Color.red;
+                var correctAnswer = currentQuestion.GetAnswer() == currentQuestion.options[int.Parse(a.answer) - 1];
+
+                points[a.player] += correctAnswer ? 1 : 0;
+
+                obj.GetComponentInChildren<SpriteRenderer>().color = correctAnswer ? Color.green : Color.red;
                 resetPlayers.Add(obj);
             }
 
@@ -183,6 +233,7 @@ public class GameFlowLogic : MonoBehaviour
 
     void ShowQuestion(Question question)
     {
+        questionNumber.GetComponent<Text>().text = currentQuestionNumber.ToString();
         questionLabel.GetComponent<Text>().text = question.operatorA + " " + (question.operation == Question.Operation.Sum ? "+" : (question.operation == Question.Operation.Multiplication ? "*" : "-")) + " " + question.operatorB + " = ?";
     }
 }

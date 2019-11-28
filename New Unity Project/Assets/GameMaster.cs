@@ -4,6 +4,7 @@ using Assets;
 using Newtonsoft.Json;
 using Proyecto26;
 using UnityEngine;
+using UnityEngine.Experimental.UIElements;
 using UnityEngine.UI;
 
 public class GameMaster : MonoBehaviour
@@ -20,6 +21,8 @@ public class GameMaster : MonoBehaviour
     GameObject tableInfoPanel;
     GameObject gamePanel;
     GameObject difficultyField;
+    GameObject questionNumber;
+    GameObject winnerLabel;
 
     List<string> players = new List<string>();
     int nextPlayerId;
@@ -40,16 +43,39 @@ public class GameMaster : MonoBehaviour
         idField = GameObject.Find("_IdField");
         registerPanel = GameObject.Find("_RegisterPanel");
         idText = GameObject.Find("_IdText");
+        questionNumber = GameObject.Find("_QuestionNumber");
         tableInfoPanel = GameObject.Find("_TableInfoPanel");
         gamePanel = GameObject.Find("_GamePanel");
         difficultyField = GameObject.Find("_DifficultyField");
+        winnerLabel = GameObject.Find("_WinnerLabel");
     }
     
     public void Start()
     {
+        Reset();
+    }
+
+    public void Reset()
+    {
+        idField.GetComponent<InputField>().text = "";
         gamePanel.SetActive(false);
         tableInfoPanel.SetActive(false);
         idText.SetActive(false);
+        questionNumber.SetActive(false);
+        winnerLabel.SetActive(false);
+        registerPanel.SetActive(true);
+
+        players.Clear();
+
+        GameObject.FindGameObjectsWithTag("player")[0].name = "_Player1";
+        GameObject.FindGameObjectsWithTag("player2")[0].name = "_Player2";
+        GameObject.FindGameObjectsWithTag("player3")[0].name = "_Player3";
+        GameObject.FindGameObjectsWithTag("player4")[0].name = "_Player4";
+
+        GameObject.Find("_Player1Name").GetComponent<Text>().text = "";
+        GameObject.Find("_Player2Name").GetComponent<Text>().text = "";
+        GameObject.Find("_Player3Name").GetComponent<Text>().text = "";
+        GameObject.Find("_Player4Name").GetComponent<Text>().text = "";
     }
 
     public void RegisterGame()
@@ -87,20 +113,11 @@ public class GameMaster : MonoBehaviour
     {
         tableInfoPanel.SetActive(false);
         gamePanel.SetActive(true);
+        questionNumber.SetActive(true);
+        winnerLabel.SetActive(true);
 
         var difficulty = difficultyField.GetComponent<Dropdown>().value;
-        GetComponent<GameFlowLogic>().Play(CurrentGame, (GameFlowLogic.Difficulty) difficulty);
-    }
-
-    public void AddPlayer()
-    {
-        if (currentPlayers >= spawnPoints.Length)
-        {
-            return;
-        }
-
-        var spawnPoint = spawnPoints[currentPlayers++];
-        Instantiate(pawnPrefab, spawnPoint, Quaternion.identity);
+        GetComponent<GameFlowLogic>().Play(CurrentGame, (GameFlowLogic.Difficulty) difficulty, players);
     }
 
     void Update()
