@@ -22,14 +22,16 @@ public class GameFlowLogic : MonoBehaviour
         public Operation operation;
         public List<int> options;
         public bool timeUp;
+        public Difficulty difficulty;
         
-        public Question(int operatorA, int operatorB, int operatorC, int operatorD, Operation operation)
+        public Question(int operatorA, int operatorB, int operatorC, int operatorD, Operation operation, Difficulty difficulty)
         {
             this.operatorA = operatorA;
             this.operatorB = operatorB;
             this.operatorC = operatorC;
             this.operatorD = operatorD;
             this.operation = operation;
+            this.difficulty = difficulty;
             options = GetOptions();
         }
 
@@ -118,7 +120,7 @@ public class GameFlowLogic : MonoBehaviour
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
     Dictionary<string, int> points = new Dictionary<string, int>();
-    static Difficulty difficulty;
+    Difficulty difficulty;
 
     void NextQuestion()
     {
@@ -129,7 +131,7 @@ public class GameFlowLogic : MonoBehaviour
         switch (difficulty)
         {
             case Difficulty.Easy:
-                currentQuestion = new Question(random.Next(1, 20), random.Next(1, 20), 0, 0, random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction);
+                currentQuestion = new Question(random.Next(1, 20), random.Next(1, 20), 0, 0, random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction, difficulty);
                 if (currentQuestion.operation == Question.Operation.Subtraction)
                 {
                     while (currentQuestion.operatorA < currentQuestion.operatorB)
@@ -139,16 +141,16 @@ public class GameFlowLogic : MonoBehaviour
                 }
                 break;
             case Difficulty.Medium:
-                currentQuestion = new Question(random.Next(1, 50), random.Next(1, 50), random.Next(1, 50), (random.Next(0, 2) == 0 ? random.Next(1, 50) : 0), (random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction));                
+                currentQuestion = new Question(random.Next(1, 50), random.Next(1, 50), random.Next(1, 50), (random.Next(0, 2) == 0 ? random.Next(1, 50) : 0), (random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction), difficulty);
                 break;
             case Difficulty.Hard:
                 var op = (Question.Operation) random.Next(1, 3);
                 if (op == Question.Operation.Multiplication)
                 {
-                    currentQuestion = new Question(random.Next(2, 10), random.Next(1, 10), 0, 0, op);
+                    currentQuestion = new Question(random.Next(2, 10), random.Next(1, 10), 0, 0, op, difficulty);
                 } else 
                 {
-                    currentQuestion = new Question(random.Next(1, 100), random.Next(1, 100), random.Next(1, 100), (random.Next(0, 2) == 0 ? random.Next(1, 100) : 0), op);
+                    currentQuestion = new Question(random.Next(1, 100), random.Next(1, 100), random.Next(1, 100), (random.Next(0, 2) == 0 ? random.Next(1, 100) : 0), op, difficulty);
                 }                
                 break;           
         }
