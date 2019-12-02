@@ -45,6 +45,7 @@ public class GameFlowLogic : MonoBehaviour
                         case Operation.Subtraction:
                             return operatorA - operatorB;
                     }
+                    break;
                 case Difficulty.Medium:
                     switch (operation)
                     {
@@ -53,6 +54,7 @@ public class GameFlowLogic : MonoBehaviour
                         case Operation.Subtraction:
                             return operatorD == 0 ? operatorA - operatorB - operatorC : operatorA - operatorB - operatorC - operatorD;
                     }
+                    break;
                 case Difficulty.Hard:
                     switch (operation)
                     {
@@ -63,7 +65,7 @@ public class GameFlowLogic : MonoBehaviour
                         case Operation.Multiplication:
                             return operatorA * operatorB;
                     }
-                }
+                    break;
             }
             return 0;
         }
@@ -79,7 +81,7 @@ public class GameFlowLogic : MonoBehaviour
             return options;
         }
     }
-    
+
     public GameMaster.Game game;
     public void Play(GameMaster.Game game, Difficulty difficulty, List<string> players)
     {
@@ -116,7 +118,7 @@ public class GameFlowLogic : MonoBehaviour
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
     Dictionary<string, int> points = new Dictionary<string, int>();
-    Difficulty difficulty;
+    static Difficulty difficulty;
 
     void NextQuestion()
     {
@@ -275,7 +277,7 @@ public class GameFlowLogic : MonoBehaviour
                 quest = question.operatorA + operation + question.operatorB + operation + question.operatorC + operation + question.operatorD;
             }
         }
+        questionNumber.GetComponent<Text>().text = currentQuestionNumber.ToString();
         questionLabel.GetComponent<Text>().text = quest + " = ?";
     }
 }
-
