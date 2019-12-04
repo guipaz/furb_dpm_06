@@ -101,7 +101,7 @@ app.get('/state/:id', function(req, res) {
 
 	const game = games[id];
 
-	ok(res, { started: game.currentQuestion != undefined, currentQuestion: game.currentQuestion });
+	ok(res, { started: game.currentQuestion != undefined, currentQuestion: game.currentQuestion, finished: game.finished });
 });
 
 app.get('/answers/:id', function(req, res) {
