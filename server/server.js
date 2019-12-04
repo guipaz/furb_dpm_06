@@ -54,7 +54,7 @@ app.post('/games', function (req, res) {
 	ok(res, { secret: secret });
 });
 
-app.post('/games/keepAlive/:id', function (req, res) {
+app.post('/keepAlive/:id', function (req, res) {
 	const id = req.params.id;
 	const guid = req.body.guid;
 
@@ -63,6 +63,7 @@ app.post('/games/keepAlive/:id', function (req, res) {
 		return;
 	}
 
+	console.log("keeping " + id + " alive");
 	game.keepAlive = Date.now();
 	ok(res);
 });
