@@ -101,6 +101,7 @@ public class GameFlowLogic : MonoBehaviour
         questionNumber = GameObject.Find("_QuestionNumber");
         winnerLabel = GameObject.Find("_WinnerLabel");
         winnerLabel.SetActive(false);
+        finishButton.SetActive(false);
 
         NextQuestion();
     }
@@ -119,6 +120,7 @@ public class GameFlowLogic : MonoBehaviour
     GameObject answerLabel;
     GameObject questionNumber;
     GameObject winnerLabel;
+    GameObject finishButton;
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
     Dictionary<string, int> points = new Dictionary<string, int>();
@@ -225,6 +227,7 @@ public class GameFlowLogic : MonoBehaviour
 
         playing = false;
         winnerLabel.SetActive(true);
+        finishButton.SetActive(true);
         answerLabel.SetActive(false);
         questionLabel.SetActive(false);
         winnerLabel.GetComponent<Text>().text = "A equipe ganhadora é a '" + winnerName + "' com " + winnerPoints + " pontos!";
