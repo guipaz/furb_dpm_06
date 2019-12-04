@@ -167,9 +167,9 @@ app.get('/games', function (req, res) {
 		}
 	});
 
-	toRemoveGames.map((g) => {
-		delete games[g];
-	});
+	// toRemoveGames.map((g) => {
+	// 	delete games[g];
+	// });
 
 	const response = { games: Object.keys(games).map((g) => 
 	{
