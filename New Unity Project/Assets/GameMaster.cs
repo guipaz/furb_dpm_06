@@ -21,6 +21,7 @@ public class GameMaster : MonoBehaviour
     GameObject tableInfoPanel;
     GameObject gamePanel;
     GameObject difficultyField;
+    GameObject numberOfQuestionsField;
     GameObject questionNumber;
     GameObject winnerLabel;
 
@@ -47,6 +48,7 @@ public class GameMaster : MonoBehaviour
         tableInfoPanel = GameObject.Find("_TableInfoPanel");
         gamePanel = GameObject.Find("_GamePanel");
         difficultyField = GameObject.Find("_DifficultyField");
+        numberOfQuestionsField = GameObject.Find("_QuestionsField");
         winnerLabel = GameObject.Find("_WinnerLabel");
     }
     
@@ -117,7 +119,9 @@ public class GameMaster : MonoBehaviour
         winnerLabel.SetActive(true);
 
         var difficulty = difficultyField.GetComponent<Dropdown>().value;
-        GetComponent<GameFlowLogic>().Play(CurrentGame, (GameFlowLogic.Difficulty) difficulty, players);
+        var numberOfQuestions = numberOfQuestionsField.GetComponent<InputField>().text ?? "1";
+        GetComponent<GameFlowLogic>().Play(CurrentGame, (GameFlowLogic.Difficulty) difficulty, players,
+            int.Parse(numberOfQuestions));
     }
 
     void Update()

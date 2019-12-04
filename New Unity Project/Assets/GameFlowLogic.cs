@@ -63,10 +63,11 @@ public class GameFlowLogic : MonoBehaviour
     }
     
     public GameMaster.Game game;
-    public void Play(GameMaster.Game game, Difficulty difficulty, List<string> players)
+    public void Play(GameMaster.Game game, Difficulty difficulty, List<string> players, int numberOfQuestions)
     {
         this.game = game;
         this.difficulty = difficulty;
+        this.numberOfQuestions = numberOfQuestions;
 
         foreach (var p in players)
         {
@@ -88,6 +89,7 @@ public class GameFlowLogic : MonoBehaviour
     
     bool playing;
     int currentQuestionNumber = 1;
+    int numberOfQuestions;
     float updateCooldown;
     float nextRoundCooldown;
     float timeUpCooldown;
@@ -157,9 +159,8 @@ public class GameFlowLogic : MonoBehaviour
             if (nextRoundCooldown <= 0)
             {
                 currentQuestionNumber++;
-                if (currentQuestionNumber > 3)
+                if (currentQuestionNumber > numberOfQuestions)
                 {
-                    //TODO game finished
                     FinishGame();
                 }
                 else
@@ -199,6 +200,8 @@ public class GameFlowLogic : MonoBehaviour
         answerLabel.SetActive(false);
         questionLabel.SetActive(false);
         winnerLabel.GetComponent<Text>().text = "A equipe ganhadora é a '" + winnerName + "' com " + winnerPoints + " pontos!";
+
+        RestClient.Post(ClientMaster.HOST + "finishGame/" + game.id, null);
     }
     
     public void FinishQuestion()

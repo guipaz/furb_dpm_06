@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class ClientMaster : MonoBehaviour
 {
-    public const string HOST = "http://localhost:3000/";
-    //public const string HOST = "http://dpm-furb.herokuapp.com/";
+    //public const string HOST = "http://localhost:3000/";
+    public const string HOST = "http://dpm-furb.herokuapp.com/";
 
     public GameObject gamesListPanel;
     public GameObject choicesPanel;
@@ -32,17 +32,12 @@ public class ClientMaster : MonoBehaviour
 
     void Awake()
     {
-        gamesListPanel.SetActive(true);
-        choicesPanel.SetActive(false);
-        nameChooserPanel.SetActive(false);
-        waitingLabel.SetActive(false);
-
         gameList = GameObject.Find("_GameList");
     }
 
     void Start()
     {
-        RefreshGames();
+        Reset();
     }
 
     public void RefreshGames()
@@ -85,6 +80,18 @@ public class ClientMaster : MonoBehaviour
         });
     }
 
+    void Reset()
+    {
+        gamesListPanel.SetActive(true);
+        choicesPanel.SetActive(false);
+        nameChooserPanel.SetActive(false);
+        waitingLabel.SetActive(false);
+        playing = false;
+        updateCooldown = 0;
+
+        RefreshGames();
+    }
+
     void Update()
     {
         if (playing)
@@ -97,7 +104,11 @@ public class ClientMaster : MonoBehaviour
                 RestClient.Get(HOST + "state/" + gameId, (e, response) =>
                 {
                     var r = JsonConvert.DeserializeObject<Response<GameState>>(response.Text);
-                    if (r.data.started)
+                    if (r.data.finished)
+                    {
+                        Reset();
+                    }
+                    else if (r.data.started)
                     {
                         waitingLabel.SetActive(false);
 
