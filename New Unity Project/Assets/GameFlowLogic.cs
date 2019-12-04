@@ -17,30 +17,58 @@ public class GameFlowLogic : MonoBehaviour
 
         public int operatorA;
         public int operatorB;
+        public int operatorC;
+        public int operatorD;
         public Operation operation;
         public List<int> options;
         public bool timeUp;
+        public Difficulty difficulty;
         
-        public Question(int operatorA, int operatorB, Operation operation)
+        public Question(int operatorA, int operatorB, int operatorC, int operatorD, Operation operation, Difficulty difficulty)
         {
             this.operatorA = operatorA;
             this.operatorB = operatorB;
+            this.operatorC = operatorC;
+            this.operatorD = operatorD;
             this.operation = operation;
+            this.difficulty = difficulty;
             options = GetOptions();
         }
 
         public int GetAnswer()
         {
-            switch (operation)
+            switch (difficulty)
             {
-                case Operation.Sum:
-                    return operatorA + operatorB;
-                case Operation.Subtraction:
-                    return operatorA - operatorB;
-                case Operation.Multiplication:
-                    return operatorA * operatorB;
+                case Difficulty.Easy:
+                    switch (operation)
+                    {
+                        case Operation.Sum:
+                            return operatorA + operatorB;
+                        case Operation.Subtraction:
+                            return operatorA - operatorB;
+                    }
+                    break;
+                case Difficulty.Medium:
+                    switch (operation)
+                    {
+                        case Operation.Sum:
+                            return operatorD == 0 ? operatorA + operatorB + operatorC : operatorA + operatorB + operatorC + operatorD;
+                        case Operation.Subtraction:
+                            return operatorD == 0 ? operatorA - operatorB - operatorC : operatorA - operatorB - operatorC - operatorD;
+                    }
+                    break;
+                case Difficulty.Hard:
+                    switch (operation)
+                    {
+                        case Operation.Sum:
+                            return operatorD == 0 ? operatorA + operatorB + operatorC : operatorA + operatorB + operatorC + operatorD;
+                        case Operation.Subtraction:
+                            return operatorD == 0 ? operatorA - operatorB - operatorC : operatorA - operatorB - operatorC - operatorD;
+                        case Operation.Multiplication:
+                            return operatorA * operatorB;
+                    }
+                    break;
             }
-
             return 0;
         }
 
@@ -48,20 +76,14 @@ public class GameFlowLogic : MonoBehaviour
         {
             var options = new List<int>();
             var realAnswer = GetAnswer();
-            if (realAnswer <= 1) 
-            {
-                options.Add(realAnswer + 3);
-            } else 
-            {
-                options.Add(realAnswer - 1);
-            }
+            options.Add(realAnswer <= 1 ? realAnswer + 3 : realAnswer - 1);            
             options.Add(realAnswer);
             options.Add(realAnswer + 1);            
             options.Add(realAnswer + 2);
             return options;
         }
     }
-    
+
     public GameMaster.Game game;
     public void Play(GameMaster.Game game, Difficulty difficulty, List<string> players, int numberOfQuestions)
     {
@@ -100,8 +122,7 @@ public class GameFlowLogic : MonoBehaviour
     Question currentQuestion;
     List<GameObject> resetPlayers = new List<GameObject>();
     Dictionary<string, int> points = new Dictionary<string, int>();
-
-    Difficulty difficulty;//precisa pegar da tela pra popular aqui
+    Difficulty difficulty;
 
     void NextQuestion()
     {
@@ -112,20 +133,27 @@ public class GameFlowLogic : MonoBehaviour
         switch (difficulty)
         {
             case Difficulty.Easy:
-                currentQuestion = new Question(random.Next(1, 20), random.Next(1, 20), random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction);
+                currentQuestion = new Question(random.Next(1, 20), random.Next(1, 20), 0, 0, random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction, difficulty);
                 if (currentQuestion.operation == Question.Operation.Subtraction)
                 {
                     while (currentQuestion.operatorA < currentQuestion.operatorB)
                     {
                         currentQuestion.operatorA = random.Next(1, 20);
-                    }                    
+                    }
                 }
                 break;
             case Difficulty.Medium:
-                currentQuestion = new Question(235, 193, Question.Operation.Subtraction); 
+                currentQuestion = new Question(random.Next(1, 50), random.Next(1, 50), random.Next(1, 50), (random.Next(0, 2) == 0 ? random.Next(1, 50) : 0), (random.Next(0, 2) == 0 ? Question.Operation.Sum : Question.Operation.Subtraction), difficulty);
                 break;
             case Difficulty.Hard:
-                currentQuestion = new Question(235, 193, Question.Operation.Multiplication);
+                var op = (Question.Operation) random.Next(1, 3);
+                if (op == Question.Operation.Multiplication)
+                {
+                    currentQuestion = new Question(random.Next(2, 10), random.Next(1, 10), 0, 0, op, difficulty);
+                } else 
+                {
+                    currentQuestion = new Question(random.Next(1, 100), random.Next(1, 100), random.Next(1, 100), (random.Next(0, 2) == 0 ? random.Next(1, 100) : 0), op, difficulty);
+                }                
                 break;           
         }
         
@@ -236,8 +264,25 @@ public class GameFlowLogic : MonoBehaviour
 
     void ShowQuestion(Question question)
     {
+        var quest = "";
+        if (question.operation == Question.Operation.Multiplication)
+        {
+            quest = question.operatorA + " * " + question.operatorB;
+        } else
+        {
+            if (question.operatorC == 0)//2 op
+            {
+                quest = question.operatorA + (question.operation == Question.Operation.Sum ? " + " : " - ") + question.operatorB;
+            } else if (question.operatorC != 0 && question.operatorD == 0)//3 op
+            {
+                var operation = question.operation == Question.Operation.Sum ? " + " : " - ";
+                quest = question.operatorA + operation + question.operatorB + operation + question.operatorC;
+            } else {//4 op
+                var operation = question.operation == Question.Operation.Sum ? " + " : " - ";
+                quest = question.operatorA + operation + question.operatorB + operation + question.operatorC + operation + question.operatorD;
+            }
+        }
         questionNumber.GetComponent<Text>().text = currentQuestionNumber.ToString();
-        questionLabel.GetComponent<Text>().text = question.operatorA + " " + (question.operation == Question.Operation.Sum ? "+" : (question.operation == Question.Operation.Multiplication ? "*" : "-")) + " " + question.operatorB + " = ?";
+        questionLabel.GetComponent<Text>().text = quest + " = ?";
     }
 }
-
