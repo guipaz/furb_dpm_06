@@ -56,7 +56,6 @@ app.post('/games', function (req, res) {
 
 app.post('/keepAlive/:id', function (req, res) {
 	const id = req.params.id;
-	const guid = req.body.guid;
 
 	if (!isExistingGame(id)) {
 		error(res, "Jogo não existente");
@@ -64,6 +63,7 @@ app.post('/keepAlive/:id', function (req, res) {
 	}
 
 	console.log("keeping " + id + " alive");
+	const game = games[id];
 	game.keepAlive = Date.now();
 	ok(res);
 });
