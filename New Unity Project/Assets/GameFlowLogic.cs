@@ -100,6 +100,7 @@ public class GameFlowLogic : MonoBehaviour
         answerLabel = GameObject.Find("_AnswerLabel");
         questionNumber = GameObject.Find("_QuestionNumber");
         winnerLabel = GameObject.Find("_WinnerLabel");
+        finishButton = GameObject.Find("_FinishButton");
         winnerLabel.SetActive(false);
         finishButton.SetActive(false);
 
@@ -169,7 +170,7 @@ public class GameFlowLogic : MonoBehaviour
         RestClient.Post(ClientMaster.HOST + "sendQuestion/" + game.id, currentQuestion).Then((response) =>
         {
             playing = true;
-            timeUpCooldown = 10;
+            timeUpCooldown = 20;
         }).Catch((response) =>
         {
             Debug.Log(response);
